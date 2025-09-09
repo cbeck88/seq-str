@@ -133,7 +133,12 @@ impl SeqStr {
     /// Returns an iterator which yields one iterator for each chunk, each of which
     /// yields `chunk_size` string values.
     /// The last chunk may be smaller.
-    pub fn chunks(&self, chunk_size: usize) -> impl Iterator<Item = impl Iterator<Item = &str>> {
+    pub fn chunks(
+        &self,
+        chunk_size: usize,
+    ) -> impl Iterator<Item = impl Iterator<Item = &str> + Clone + ExactSizeIterator>
+    + Clone
+    + ExactSizeIterator {
         fn helper(b: &[u8]) -> &str {
             unsafe { str::from_utf8_unchecked(b) }
         }

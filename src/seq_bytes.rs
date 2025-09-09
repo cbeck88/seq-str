@@ -484,6 +484,7 @@ impl<'a> IntoIterator for &'a SeqBytes {
 }
 
 // A chunks iterator produces SeqBytesIter of a few items at a time
+#[derive(Clone)]
 pub struct SeqBytesChunksIter<'a> {
     chunk_size: usize,
     iter: SeqBytesIter<'a>,
@@ -513,7 +514,14 @@ impl<'a> Iterator for SeqBytesChunksIter<'a> {
             offsets: left,
         })
     }
+
+    fn size_hint(&self) -> (usize, Option<usize>) {
+        let remaining = self.iter.offsets.len().div_ceil(self.chunk_size);
+        (remaining, Some(remaining))
+    }
 }
+
+impl<'a> ExactSizeIterator for SeqBytesChunksIter<'a> {}
 
 #[cfg(test)]
 mod tests {
