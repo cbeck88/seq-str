@@ -136,9 +136,7 @@ impl SeqStr {
     pub fn chunks(
         &self,
         chunk_size: usize,
-    ) -> impl Iterator<Item = impl Iterator<Item = &str> + Clone + ExactSizeIterator>
-    + Clone
-    + ExactSizeIterator {
+    ) -> impl Clone + ExactSizeIterator<Item = impl Clone + ExactSizeIterator<Item = &str>> {
         fn helper(b: &[u8]) -> &str {
             unsafe { str::from_utf8_unchecked(b) }
         }

@@ -1,6 +1,6 @@
 [package]
 name = "seq-str"
-version = "0.1.3"
+version = "0.1.4"
 authors = ["Chris Beck <beck.ct@gmail.com>"]
 edition = "2024"
 readme = "README.md"
