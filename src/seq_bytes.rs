@@ -132,6 +132,16 @@ impl SeqBytes {
         }
     }
 
+    /// Iterate over the sequence of &[u8], in chunks of given size.
+    /// Returns an iterator which yields one iterator for each chunk.
+    /// The last chunk may be smaller.
+    pub fn chunks(&self, chunk_size: usize) -> SeqBytesChunksIter<'_> {
+        SeqBytesChunksIter {
+            chunk_size,
+            iter: self.iter(),
+        }
+    }
+
     // Helper to convert range bounds object to a range
     fn range_bounds_to_range(
         &self,
@@ -473,6 +483,38 @@ impl<'a> IntoIterator for &'a SeqBytes {
     }
 }
 
+// A chunks iterator produces SeqBytesIter of a few items at a time
+pub struct SeqBytesChunksIter<'a> {
+    chunk_size: usize,
+    iter: SeqBytesIter<'a>,
+}
+
+impl<'a> Iterator for SeqBytesChunksIter<'a> {
+    type Item = SeqBytesIter<'a>;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        if self.iter.offsets.is_empty() {
+            return None;
+        }
+        if self.iter.offsets.len() <= self.chunk_size {
+            let iter = self.iter.clone();
+            self.iter.offsets = &[];
+            return Some(iter);
+        }
+
+        let (left, right) = self.iter.offsets.split_at(self.chunk_size);
+
+        let data_end = right.first().copied().unwrap_or(self.iter.data.len());
+
+        self.iter.offsets = right;
+
+        Some(SeqBytesIter {
+            data: &self.iter.data[..data_end],
+            offsets: left,
+        })
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -633,5 +675,36 @@ mod tests {
         assert_eq!(seq_b.len(), 2);
         assert_eq!(&seq_b[0], b"123");
         assert_eq!(&seq_b[1], b"");
+    }
+
+    #[test]
+    fn chunks() {
+        let vec_b: Vec<&[u8]> = vec![b"123", b"45", b"6", b"", b"7", b"89"];
+        let seq_b: SeqBytes = vec_b.iter().collect();
+
+        let chunked: Vec<Vec<&[u8]>> = seq_b.chunks(2).map(|chunk| chunk.collect()).collect();
+
+        assert_eq!(chunked.len(), 3);
+        assert_eq!(chunked[0].len(), 2);
+        assert_eq!(chunked[0][0], b"123");
+        assert_eq!(chunked[0][1], b"45");
+        assert_eq!(chunked[1].len(), 2);
+        assert_eq!(chunked[1][0], b"6");
+        assert_eq!(chunked[1][1], b"");
+        assert_eq!(chunked[2].len(), 2);
+        assert_eq!(chunked[2][0], b"7");
+        assert_eq!(chunked[2][1], b"89");
+
+        let chunked: Vec<Vec<&[u8]>> = seq_b.chunks(4).map(|chunk| chunk.collect()).collect();
+
+        assert_eq!(chunked.len(), 2);
+        assert_eq!(chunked[0].len(), 4);
+        assert_eq!(chunked[0][0], b"123");
+        assert_eq!(chunked[0][1], b"45");
+        assert_eq!(chunked[0][2], b"6");
+        assert_eq!(chunked[0][3], b"");
+        assert_eq!(chunked[1].len(), 2);
+        assert_eq!(chunked[1][0], b"7");
+        assert_eq!(chunked[1][1], b"89");
     }
 }

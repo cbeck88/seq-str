@@ -5,7 +5,7 @@ extern crate alloc;
 extern crate std;
 
 mod seq_bytes;
-pub use seq_bytes::{SeqBytes, SeqBytesIter, SeqBytesIterMut};
+pub use seq_bytes::{SeqBytes, SeqBytesIter, SeqBytesIterMut, SeqBytesChunksIter};
 
 mod seq_str;
 pub use seq_str::SeqStr;

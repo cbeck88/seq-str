@@ -129,6 +129,18 @@ impl SeqStr {
         self.inner.iter_mut().map(helper)
     }
 
+    /// Iterate over the sequence of `&str`, in chunks of given size.
+    /// Returns an iterator which yields one iterator for each chunk, each of which
+    /// yields `chunk_size` string values.
+    /// The last chunk may be smaller.
+    pub fn chunks(&self, chunk_size: usize) -> impl Iterator<Item = impl Iterator<Item = &str>> {
+        fn helper(b: &[u8]) -> &str {
+            unsafe { str::from_utf8_unchecked(b) }
+        }
+
+        self.inner.chunks(chunk_size).map(|iter| iter.map(helper))
+    }
+
     /// Truncate to at most the first n `str`
     pub fn truncate(&mut self, new_size: usize) {
         self.inner.truncate(new_size)
@@ -202,7 +214,9 @@ impl SeqStr {
 
     /// Join the `str` in the sequence into one string, placing a separator between them
     pub fn join(&self, separator: &str) -> String {
-        let mut result = String::with_capacity(self.inner.num_bytes() + self.inner.len().saturating_sub(1) * separator.len());
+        let mut result = String::with_capacity(
+            self.inner.num_bytes() + self.inner.len().saturating_sub(1) * separator.len(),
+        );
         let mut first = true;
 
         for s in self.iter() {
@@ -468,6 +482,6 @@ mod tests {
         let seq_str = SeqStr::from_iter(["asdf", "jkl;", "", ":)"]);
 
         assert_eq!(seq_str.concat(), "asdfjkl;:)");
-        assert_eq!(seq_str.join(", "), "asdf, jkl;, , :)");    
+        assert_eq!(seq_str.join(", "), "asdf, jkl;, , :)");
     }
 }
