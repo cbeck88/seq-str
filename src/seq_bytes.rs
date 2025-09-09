@@ -343,6 +343,7 @@ impl fmt::Debug for SeqBytes {
 }
 
 /// An iterator over a SeqBytes object
+#[derive(Clone)]
 pub struct SeqBytesIter<'a> {
     data: &'a [u8],
     offsets: &'a [usize],
