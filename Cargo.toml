@@ -1,0 +1,22 @@
+[package]
+name = "seq-str"
+version = "0.1.0"
+authors = ["Chris Beck <beck.ct@gmail.com>"]
+edition = "2024"
+readme = "README.md"
+description = "Flat collections of strings etc."
+license = "MIT"
+keywords = ["flat", "utility", "container", "collection"]
+categories = ["data-structures", "no-std"]
+repository = "https://github.com/cbeck88/seq-str"
+
+[dependencies]
+serde = { version = "1.0", default-features = false, optional = true }
+
+[dev-dependencies]
+serde_json = "1.0"
+
+[features]
+default = ["serde", "std"]
+serde = ["dep:serde"]
+std = []
