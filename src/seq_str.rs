@@ -1,5 +1,5 @@
 use crate::{SeqBytes, SeqBytesIter, SeqBytesIterMut};
-use alloc::vec::Vec;
+use alloc::{string::String, vec::Vec};
 use core::fmt;
 
 /// A sequence of &str, stored contiguously
@@ -193,6 +193,27 @@ impl SeqStr {
     /// See [SeqBytes::as_vec] for more discussion of tradeoffs.
     pub fn as_vec(&self) -> Vec<&str> {
         self.iter().collect()
+    }
+
+    /// Concatenate the `str` in the sequence into one string
+    pub fn concat(&self) -> &str {
+        unsafe { core::str::from_utf8_unchecked(self.inner.concat()) }
+    }
+
+    /// Join the `str` in the sequence into one string, placing a separator between them
+    pub fn join(&self, separator: &str) -> String {
+        let mut result = String::with_capacity(self.inner.num_bytes() + self.inner.len().saturating_sub(1) * separator.len());
+        let mut first = true;
+
+        for s in self.iter() {
+            if first {
+                first = false;
+            } else {
+                result += separator;
+            }
+            result += s;
+        }
+        result
     }
 }
 
@@ -440,5 +461,13 @@ mod tests {
         let seq_str2: SeqStr = serde_json::from_str(&ser).unwrap();
 
         assert_eq!(seq_str, seq_str2);
+    }
+
+    #[test]
+    fn test_join() {
+        let seq_str = SeqStr::from_iter(["asdf", "jkl;", "", ":)"]);
+
+        assert_eq!(seq_str.concat(), "asdfjkl;:)");
+        assert_eq!(seq_str.join(", "), "asdf, jkl;, , :)");    
     }
 }

@@ -63,6 +63,11 @@ impl SeqBytes {
         self.offsets.shrink_to_fit();
     }
 
+    /// Get the sum of the lengths of the byte strings
+    pub fn num_bytes(&self) -> usize {
+        self.data.len()
+    }
+
     /// Get the i'th element of the sequence in a checked manner
     pub fn get(&self, idx: usize) -> Option<&[u8]> {
         let first = self.offsets.get(idx)?;
@@ -301,6 +306,11 @@ impl SeqBytes {
     /// as needed directly to this type instead, if they can't be obtained in a simpler way.
     pub fn as_vec(&self) -> Vec<&[u8]> {
         self.iter().collect()
+    }
+
+    /// Concatenate the `&[u8]` in the sequence into one `&[u8]`
+    pub fn concat(&self) -> &[u8] {
+        &self.data[..]
     }
 }
 
