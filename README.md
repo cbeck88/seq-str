@@ -11,6 +11,11 @@ be drop-in replacements, for improved memory locality and fewer memory allocatio
 These types also support "`emplace`"-like APIs such as `in_place_writer`, which
 allow writing the next element directly into the contiguous buffer.
 
+`SeqStr` can be more ergonomic than `Vec<String>` when making heavy use of iterators,
+because it can be collected from any iterator that yields `AsRef<str>`. This can avoid
+a bunch of boilerplate and ceremony around lining up the `String`, `&String`, `&str`, what
+have you to be exactly the correct type via `.map(...)`, `.cloned()`, etc.
+
 `SeqStr::from_display_iter` allows you to collect any iterator of `impl Display`,
 where all formatting takes place directly in the contiguous buffer.
 
